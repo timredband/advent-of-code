@@ -32,25 +32,22 @@ func main() {
 			},
 		},
 		Action: func(ctx context.Context, cmd *cli.Command) error {
+			if file == "" {
+				file = fmt.Sprintf("./inputs/day%s/part%s.txt", day, part)
+			}
+
+			file, err := os.Open(file)
+			if err != nil {
+				return err
+			}
+
+			defer file.Close()
+
 			switch day {
 			case "1":
-				if file == "" {
-					file = fmt.Sprintf("./inputs/day%s/part%s.txt", day, part)
-				}
-
-				fmt.Println(file)
-
-				file, err := os.Open(file)
-				if err != nil {
-					return err
-				}
-
-				defer file.Close()
-
 				day1.Execute(part, file)
 			default:
-				msg := fmt.Sprintf("unknown day: %s", day)
-				return errors.New(msg)
+				return errors.New(fmt.Sprintf("unknown day: %s", day))
 			}
 
 			return nil
