@@ -43,7 +43,6 @@ func Part1(file *os.File) {
 		}
 
 		result += diff
-
 	}
 
 	fmt.Println(result)

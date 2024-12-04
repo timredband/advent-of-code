@@ -2,12 +2,11 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"os"
 
-	"github.com/timredband/advent-of-code/pkg/day1"
+	"github.com/timredband/advent-of-code/pkg/days"
 	"github.com/urfave/cli/v3"
 )
 
@@ -21,10 +20,12 @@ func main() {
 			&cli.StringFlag{
 				Name:        "d",
 				Destination: &day,
+				Required:    true,
 			},
 			&cli.StringFlag{
 				Name:        "p",
 				Destination: &part,
+				Required:    true,
 			},
 			&cli.StringFlag{
 				Name:        "f",
@@ -33,7 +34,7 @@ func main() {
 		},
 		Action: func(ctx context.Context, cmd *cli.Command) error {
 			if file == "" {
-				file = fmt.Sprintf("./inputs/day%s/part%s.txt", day, part)
+				file = fmt.Sprintf("./inputs/day%s/input.txt", day)
 			}
 
 			file, err := os.Open(file)
@@ -43,14 +44,7 @@ func main() {
 
 			defer file.Close()
 
-			switch day {
-			case "1":
-				day1.Execute(part, file)
-			default:
-				return errors.New(fmt.Sprintf("unknown day: %s", day))
-			}
-
-			return nil
+			return days.Execute(day, part, file)
 		},
 	}
 
