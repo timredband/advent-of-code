@@ -1,7 +1,6 @@
 package day1
 
 import (
-	"fmt"
 	"os"
 	"regexp"
 	"sort"
@@ -10,7 +9,7 @@ import (
 	"github.com/timredband/advent-of-code/pkg/utils"
 )
 
-func Part1(file *os.File) {
+func Part1(file *os.File) int {
 	inputs := utils.ReadFile(file)
 
 	left := make([]int, 0, len(inputs))
@@ -45,5 +44,5 @@ func Part1(file *os.File) {
 		result += diff
 	}
 
-	fmt.Println(result)
+	return result
 }

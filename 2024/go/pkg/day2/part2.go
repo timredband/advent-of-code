@@ -2,4 +2,4 @@ package day2
 
 import "os"
 
-func Part2(file *os.File) {}
+func Part2(file *os.File) int { return 0 }

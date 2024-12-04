@@ -44,7 +44,14 @@ func main() {
 
 			defer file.Close()
 
-			return days.Execute(day, part, file)
+			result, err := days.Execute(day, part, file)
+			if err != nil {
+				return err
+			}
+
+			fmt.Println(result)
+
+			return nil
 		},
 	}
 

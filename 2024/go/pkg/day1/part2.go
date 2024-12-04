@@ -1,7 +1,6 @@
 package day1
 
 import (
-	"fmt"
 	"os"
 	"regexp"
 	"strconv"
@@ -9,7 +8,7 @@ import (
 	"github.com/timredband/advent-of-code/pkg/utils"
 )
 
-func Part2(file *os.File) {
+func Part2(file *os.File) int {
 	inputs := utils.ReadFile(file)
 
 	left := make([]int, 0, len(inputs))
@@ -33,5 +32,5 @@ func Part2(file *os.File) {
 		result += similarity
 	}
 
-	fmt.Println(result)
+	return result
 }
