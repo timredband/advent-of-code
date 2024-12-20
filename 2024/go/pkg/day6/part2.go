@@ -1,26 +1,109 @@
 package day6
 
 import (
-	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/timredband/advent-of-code/pkg/utils"
 )
 
-type Position struct {
-	i         int
-	j         int
-	direction string
+func createStartingBoard(initialBoard [][]string) [][]string {
+	board := make([][]string, len(initialBoard))
+
+	for i := range initialBoard {
+		board[i] = make([]string, len(initialBoard[i]))
+		copy(board[i], initialBoard[i])
+	}
+
+	return board
+}
+
+func walk(board [][]string, position Position) int {
+	for position.i > 0 && position.j < len(board) {
+		current := board[position.i][position.j]
+
+		if string(current[0]) == "X" {
+			//been here before
+
+			number, _ := strconv.Atoi(string(current[1]))
+
+			// hacky way to figure out if I've visited this position "many" times which might be a good indicator I'm in a loop. Obviously there's flaw with this.
+			if number == 9 {
+				return 1
+			}
+
+			number += 1
+			board[position.i][position.j] = "X" + strconv.Itoa(number)
+		} else {
+			board[position.i][position.j] = "X1"
+		}
+
+		if position.direction == "north" {
+			if position.i-1 < 0 {
+				break
+			}
+
+			if board[position.i-1][position.j] == "#" {
+				position.direction = "east"
+			} else {
+				position.i -= 1
+			}
+
+			continue
+		}
+
+		if position.direction == "south" {
+			if position.i+1 > len(board)-1 {
+				break
+			}
+
+			if board[position.i+1][position.j] == "#" {
+				position.direction = "west"
+			} else {
+				position.i += 1
+			}
+
+			continue
+		}
+
+		if position.direction == "east" {
+			if position.j+1 > len(board)-1 {
+				break
+			}
+
+			if board[position.i][position.j+1] == "#" {
+				position.direction = "south"
+			} else {
+				position.j += 1
+			}
+
+			continue
+
+		}
+
+		if position.direction == "west" {
+			if position.j-1 < 0 {
+				break
+			}
+
+			if board[position.i][position.j-1] == "#" {
+				position.direction = "north"
+			} else {
+				position.j -= 1
+			}
+
+			continue
+		}
+	}
+
+	return 0
 }
 
 func Part2(file *os.File) int {
 	inputs := utils.ReadFile(file)
-
 	initialBoard := make([][]string, len(inputs))
-
 	initialPosition := Position{direction: "north"}
-	// maxPosition := len(inputs) - 1
 
 	for i, v := range inputs {
 		initialBoard[i] = strings.Split(v, "")
@@ -33,90 +116,21 @@ func Part2(file *os.File) int {
 		}
 	}
 
+	result := 0
+
 	for i := range initialBoard {
 		for j := range initialBoard[i] {
-			board := make([][]string, len(initialBoard))
-			for k := range initialBoard {
-				board[k] = make([]string, len(initialBoard[k]))
-				copy(board[k], initialBoard[k])
+			if initialBoard[i][j] == "#" {
+				continue
 			}
+
+			board := createStartingBoard(initialBoard)
+			board[i][j] = "#"
+			position := initialPosition
+
+			result += walk(board, position)
 		}
 	}
 
-	for i := range board {
-		fmt.Println(board[i])
-	}
-
-	// for position.i > 0 && position.j < len(inputs) {
-	// 	board[position.i][position.j] = "X"
-	//
-	// 	if position.direction == "north" {
-	// 		if position.i-1 < 0 {
-	// 			break
-	// 		}
-	//
-	// 		if board[position.i-1][position.j] == "#" {
-	// 			position.direction = "east"
-	// 		} else {
-	// 			position.i -= 1
-	// 		}
-	//
-	// 		continue
-	// 	}
-	//
-	// 	if position.direction == "south" {
-	// 		if position.i+1 > maxPosition {
-	// 			break
-	// 		}
-	//
-	// 		if board[position.i+1][position.j] == "#" {
-	// 			position.direction = "west"
-	// 		} else {
-	// 			position.i += 1
-	// 		}
-	//
-	// 		continue
-	// 	}
-	//
-	// 	if position.direction == "east" {
-	// 		if position.j+1 > maxPosition {
-	// 			break
-	// 		}
-	//
-	// 		if board[position.i][position.j+1] == "#" {
-	// 			position.direction = "south"
-	// 		} else {
-	// 			position.j += 1
-	// 		}
-	//
-	// 		continue
-	//
-	// 	}
-	//
-	// 	if position.direction == "west" {
-	// 		if position.j-1 < 0 {
-	// 			break
-	// 		}
-	//
-	// 		if board[position.i][position.j-1] == "#" {
-	// 			position.direction = "north"
-	// 		} else {
-	// 			position.j -= 1
-	// 		}
-	//
-	// 		continue
-	// 	}
-	// }
-	//
-	// result := 0
-	//
-	// for _, row := range board {
-	// 	for _, v := range row {
-	// 		if v == "X" {
-	// 			result += 1
-	// 		}
-	// 	}
-	// }
-
-	return 0
+	return result
 }
