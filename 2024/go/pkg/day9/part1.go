@@ -8,7 +8,9 @@ import (
 )
 
 type Memory struct {
-	Id int
+	Id       int
+	Length   int
+	Position int
 }
 
 func Part1(file *os.File) int {
