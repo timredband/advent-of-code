@@ -32,10 +32,6 @@ func Part2(file *os.File) int {
 			return cache[cacheEntry]
 		}
 
-		if stones, ok := cache[cacheEntry]; ok {
-			return stones
-		}
-
 		if stone == "0" {
 			result := DFS("1", blinks-1)
 			cache[cacheEntry] = result
