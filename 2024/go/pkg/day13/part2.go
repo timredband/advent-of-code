@@ -9,42 +9,9 @@ import (
 	"github.com/timredband/advent-of-code/pkg/utils"
 )
 
+// I had to lookup the idea for this one. Credit here https://advent-of-code.xavd.id/writeups/2024/day/13/.
 func Part2(file *os.File) int {
 	input := utils.ReadFile(file)
-
-	minimumTokens := math.MaxInt
-
-	cache := make(map[CacheEntry]struct{})
-
-	var backtrack func(machine Machine, xTotal int, yTotal, aPresses int, bPresses int)
-	backtrack = func(machine Machine, xTotal int, yTotal, aPresses int, bPresses int) {
-		if _, ok := cache[CacheEntry{aPresses: aPresses, bPresses: bPresses}]; ok {
-			return
-		}
-
-		cache[CacheEntry{aPresses: aPresses, bPresses: bPresses}] = struct{}{}
-
-		if xTotal == machine.Prize.X && yTotal == machine.Prize.Y {
-			tokens := (aPresses * 3) + (bPresses)
-			minimumTokens = min(minimumTokens, tokens)
-
-			return
-		}
-
-		if xTotal > machine.Prize.X {
-			return
-		}
-
-		if yTotal > machine.Prize.Y {
-			return
-		}
-
-		// Press A button
-		backtrack(machine, xTotal+machine.A.X, yTotal+machine.A.Y, aPresses+1, bPresses)
-
-		// Press B button
-		backtrack(machine, xTotal+machine.B.X, yTotal+machine.B.Y, aPresses, bPresses+1)
-	}
 
 	result := 0
 
@@ -66,17 +33,27 @@ func Part2(file *os.File) int {
 		machine := Machine{
 			A:     Value{X: aX, Y: aY},
 			B:     Value{X: bX, Y: bY},
-			Prize: Value{X: prizeX + 100000, Y: prizeY + 100000},
+			Prize: Value{X: prizeX + 10000000000000, Y: prizeY + 10000000000000},
 		}
 
-		backtrack(machine, 0, 0, 0, 0)
+		convertedaX := machine.A.X * machine.B.Y
+		convertedXPrize := machine.Prize.X * machine.B.Y
 
-		if minimumTokens != math.MaxInt {
-			result += minimumTokens
+		convertedaY := machine.A.Y * machine.B.X
+		convertedYPrize := machine.Prize.Y * machine.B.X
+
+		convertedA := convertedaX - convertedaY
+		convertedPrize := convertedXPrize - convertedYPrize
+
+		aPresses := float64(convertedPrize) / float64(convertedA)
+		bPresses := (float64(machine.Prize.X) - (aPresses * float64(machine.A.X))) / float64(machine.B.X)
+
+		if aPresses != math.Floor(aPresses) || bPresses != math.Floor(bPresses) {
+			continue
 		}
 
-		minimumTokens = math.MaxInt
-		clear(cache)
+		tokens := (aPresses * 3) + (bPresses)
+		result += int(tokens)
 	}
 
 	return result
