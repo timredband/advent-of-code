@@ -86,7 +86,7 @@ func Part1(file *os.File) int {
 			registerB = int(math.Trunc(float64(numerator) / denominator))
 			instructionPointer += 2
 			continue
-		case 7: // bdv
+		case 7: // cdv
 			numerator := registerA
 			denominator := math.Pow(2, float64(getComboOperand(operand)))
 			registerC = int(math.Trunc(float64(numerator) / denominator))

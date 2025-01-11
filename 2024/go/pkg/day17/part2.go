@@ -16,9 +16,6 @@ func Part2(file *os.File) int {
 	input := utils.ReadFile(file)
 
 	r := regexp.MustCompile("[0-9]+")
-	registerA, _ := strconv.Atoi(r.FindAllString(input[0], -1)[0])
-	registerB, _ := strconv.Atoi(r.FindAllString(input[1], -1)[0])
-	registerC, _ := strconv.Atoi(r.FindAllString(input[2], -1)[0])
 
 	program := make([]int, 0)
 
@@ -28,114 +25,83 @@ func Part2(file *os.File) int {
 		program = append(program, num)
 	}
 
-	var getComboOperand func(operand int) int
-	getComboOperand = func(operand int) int {
-		switch operand {
-		case 4:
-			return registerA
-		case 5:
-			return registerB
-		case 6:
-			return registerC
-		default:
-			return operand
-		}
+	output := ""
+	result := 0
+
+	expected := strings.Join(nums, "")
+	reversed := make([]string, 0)
+
+	for i := range expected {
+		reversed = append(reversed, string(expected[len(expected)-i-1]))
 	}
 
-	output := ""
-	expected := strings.Join(nums, ",")
-	// a := 0b101_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000
-	a := 0545311
+	reversedExpected := strings.Join(reversed, "")
 
-	fmt.Println(a)
+	fmt.Println(reversedExpected)
 
-	for output != expected {
-		// if a%1000000 == 0 {
-		// 	fmt.Println(a)
-		// 	fmt.Println(output)
-		// }
-
-		registerA = a
-		registerB = 0
-		registerC = 0
-
-		// fmt.Println(registerA)
-
+	var calculate func(depth int, input int) bool
+	calculate = func(depth int, input int) bool {
+		registerA := input
+		registerB := 0
+		registerC := 0
 		outputs := make([]string, 0)
 
-		instructionPointer := 0
-
-		for instructionPointer < len(program) {
-			fmt.Printf("registerA: %b\n", registerA)
-			fmt.Printf("registerB: %b\n", registerB)
-			fmt.Printf("registerC: %b\n", registerC)
-			fmt.Println("----------------")
-
-			opcode := program[instructionPointer]
-			operand := program[instructionPointer+1]
-
-			switch opcode {
-			case 0: // adv division
-				numerator := registerA
-				denominator := math.Pow(2, float64(getComboOperand(operand)))
-				registerA = int(math.Trunc(float64(numerator) / denominator))
-				instructionPointer += 2
-				continue
-			case 1: // bxl bitwise XOR
-				registerB = registerB ^ operand
-				instructionPointer += 2
-				continue
-			case 2: // bst operand mod 8
-				registerB = getComboOperand(operand) % 8
-				instructionPointer += 2
-				continue
-			case 3: // jnz
-				if registerA == 0 {
-					instructionPointer += 2
-					continue
-				}
-				instructionPointer = operand
-				continue
-			case 4: // bxc
+		if registerA == 0 {
+			outputs = append(outputs, strconv.Itoa(0))
+		} else {
+			for registerA != 0 {
+				registerB = registerA % 8
+				registerB = registerB ^ 1
+				registerC = registerA / (int(math.Pow(2, float64(registerB))))
 				registerB = registerB ^ registerC
-				instructionPointer += 2
-				continue
-			case 5: // out
-				output := strconv.Itoa(getComboOperand(operand) % 8)
-				outputs = append(outputs, output)
-				instructionPointer += 2
-				continue
-			case 6: // bdv
-				numerator := registerA
-				denominator := math.Pow(2, float64(getComboOperand(operand)))
-				registerB = int(math.Trunc(float64(numerator) / denominator))
-				instructionPointer += 2
-				continue
-			case 7: // bdv
-				numerator := registerA
-				denominator := math.Pow(2, float64(getComboOperand(operand)))
-				registerC = int(math.Trunc(float64(numerator) / denominator))
-				instructionPointer += 2
-				continue
-			default:
-				panic("unreachable")
+				registerB = registerB ^ 4
+				registerA = registerA >> 3
+				outputs = append(outputs, strconv.Itoa(registerB%8))
 			}
 		}
 
-		output = strings.Join(outputs, ",")
-		fmt.Println("o: " + output)
-		fmt.Println("e: " + expected)
-		fmt.Println("====================================")
-		a += 1
+		output = strings.Join(outputs, "")
+		fmt.Println(output)
 
-		break
+		return output == expected[depth:]
 	}
 
-	fmt.Printf("registerA: %b\n", registerA)
-	fmt.Printf("registerB: %b\n", registerB)
-	fmt.Printf("registerC: %b\n", registerC)
+	var DFS func(depth int, value int) bool
+	DFS = func(depth int, value int) bool {
+		if depth == 0 {
+			return true
+		}
+
+		if output == expected {
+			result = min(result, value)
+			return true
+		}
+
+		for i := range 8 {
+			v := ((i | 4) << (3 * depth)) | value
+			if i < 4 {
+				v = v ^ (4 << (3 * depth))
+			}
+			matches := calculate(depth, v)
+			if matches {
+				DFS(depth-1, v)
+			}
+
+			if output == reversedExpected {
+				result = min(result, value)
+				return true
+			}
+		}
+
+		return false
+	}
+
+	// start := 0b100_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000
+	start := 0
+	DFS(15, start)
+
 	fmt.Println("o: " + output)
 	fmt.Println("e: " + expected)
 
-	return a - 1
+	return result
 }
