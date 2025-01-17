@@ -1,185 +1,283 @@
 package day21
 
 import (
+	"math"
 	"os"
-	"slices"
 	"strconv"
 	"strings"
 
 	"github.com/timredband/advent-of-code/pkg/utils"
 )
 
-func createNumberPad() map[string]map[string]string {
-	numberPad := make(map[string]map[string]string)
+type cacheEntry struct {
+	path  string
+	depth int
+}
 
-	numberPad["0"] = make(map[string]string)
-	numberPad["0"]["A"] = ">"
-	numberPad["0"]["2"] = "^"
+type cache = map[cacheEntry]int
 
-	numberPad["1"] = make(map[string]string)
-	numberPad["1"]["2"] = ">"
-	numberPad["1"]["4"] = "^"
+func createNumberPad() map[string]map[string][]string {
+	numberPad := make(map[string]map[string][]string)
 
-	numberPad["2"] = make(map[string]string)
-	numberPad["2"]["0"] = "v"
-	numberPad["2"]["1"] = "<"
-	numberPad["2"]["3"] = ">"
-	numberPad["2"]["5"] = "^"
+	numberPad["A"] = make(map[string][]string)
+	numberPad["A"]["A"] = []string{""}
+	numberPad["A"]["0"] = []string{"<"}
+	numberPad["A"]["1"] = []string{"^<<", "<^<"}
+	numberPad["A"]["2"] = []string{"^<,<^"}
+	numberPad["A"]["3"] = []string{"^"}
+	numberPad["A"]["4"] = []string{"^^<<", "^<<^", "<^^<"}
+	numberPad["A"]["5"] = []string{"^^<", "<^^"}
+	numberPad["A"]["6"] = []string{"^^"}
+	numberPad["A"]["7"] = []string{"^^^<<", "<^^^<"}
+	numberPad["A"]["8"] = []string{"^^^<", "<^^^"}
+	numberPad["A"]["9"] = []string{"^^^"}
 
-	numberPad["3"] = make(map[string]string)
-	numberPad["3"]["A"] = "v"
-	numberPad["3"]["2"] = "<"
-	numberPad["3"]["6"] = "^"
+	numberPad["0"] = make(map[string][]string)
+	numberPad["0"]["A"] = []string{">"}
+	numberPad["0"]["0"] = []string{""}
+	numberPad["0"]["1"] = []string{"^<"}
+	numberPad["0"]["2"] = []string{"^"}
+	numberPad["0"]["3"] = []string{"^>", ">^"}
+	numberPad["0"]["4"] = []string{"^^<"}
+	numberPad["0"]["5"] = []string{"^^"}
+	numberPad["0"]["6"] = []string{"^^>", ">^^"}
+	numberPad["0"]["7"] = []string{"^^^<", "^<^^", "^^<^"}
+	numberPad["0"]["8"] = []string{"^^^"}
+	numberPad["0"]["9"] = []string{"^^^>", ">^^^", "^>^^", "^^>^"}
 
-	numberPad["4"] = make(map[string]string)
-	numberPad["4"]["1"] = "v"
-	numberPad["4"]["5"] = ">"
-	numberPad["4"]["7"] = "^"
+	numberPad["1"] = make(map[string][]string)
+	numberPad["1"]["A"] = []string{">>v"}
+	numberPad["1"]["0"] = []string{">v"}
+	numberPad["1"]["1"] = []string{""}
+	numberPad["1"]["2"] = []string{">"}
+	numberPad["1"]["3"] = []string{">>"}
+	numberPad["1"]["4"] = []string{"^"}
+	numberPad["1"]["5"] = []string{">^", "^>"}
+	numberPad["1"]["6"] = []string{">>^", "^>>"}
+	numberPad["1"]["7"] = []string{"^^"}
+	numberPad["1"]["8"] = []string{"^^>", ">^^"}
+	numberPad["1"]["9"] = []string{"^^>>", ">>^^", "^>>^"}
 
-	numberPad["5"] = make(map[string]string)
-	numberPad["5"]["2"] = "v"
-	numberPad["5"]["4"] = "<"
-	numberPad["5"]["6"] = ">"
-	numberPad["5"]["8"] = "^"
+	numberPad["2"] = make(map[string][]string)
+	numberPad["2"]["A"] = []string{">v", "v>"}
+	numberPad["2"]["0"] = []string{"v"}
+	numberPad["2"]["1"] = []string{"<"}
+	numberPad["2"]["2"] = []string{""}
+	numberPad["2"]["3"] = []string{">"}
+	numberPad["2"]["4"] = []string{"^<", "<^"}
+	numberPad["2"]["5"] = []string{"^"}
+	numberPad["2"]["6"] = []string{"^>", ">^"}
+	numberPad["2"]["7"] = []string{"^^<", "<^^"}
+	numberPad["2"]["8"] = []string{"^^"}
+	numberPad["2"]["9"] = []string{"^^>", ">^^"}
 
-	numberPad["6"] = make(map[string]string)
-	numberPad["6"]["3"] = "v"
-	numberPad["6"]["5"] = "<"
-	numberPad["6"]["9"] = "^"
+	numberPad["3"] = make(map[string][]string)
+	numberPad["3"]["A"] = []string{"v"}
+	numberPad["3"]["0"] = []string{"<v", "v<"}
+	numberPad["3"]["1"] = []string{"<<"}
+	numberPad["3"]["2"] = []string{"<"}
+	numberPad["3"]["3"] = []string{""}
+	numberPad["3"]["4"] = []string{"<<^", "^<<"}
+	numberPad["3"]["5"] = []string{"^<", "<^"}
+	numberPad["3"]["6"] = []string{"^"}
+	numberPad["3"]["7"] = []string{"^^<<", "<<^^", "^<<^", "<^^<"}
+	numberPad["3"]["8"] = []string{"^^<", "<^^"}
+	numberPad["3"]["9"] = []string{"^^"}
 
-	numberPad["7"] = make(map[string]string)
-	numberPad["7"]["4"] = "v"
-	numberPad["7"]["8"] = ">"
+	numberPad["4"] = make(map[string][]string)
+	numberPad["4"]["A"] = []string{">>vv", "vv>>", ">vv>"}
+	numberPad["4"]["0"] = []string{">vv"}
+	numberPad["4"]["1"] = []string{"v"}
+	numberPad["4"]["2"] = []string{">v", "v>"}
+	numberPad["4"]["3"] = []string{">>v", "v>>"}
+	numberPad["4"]["4"] = []string{""}
+	numberPad["4"]["5"] = []string{">"}
+	numberPad["4"]["6"] = []string{">>"}
+	numberPad["4"]["7"] = []string{"^"}
+	numberPad["4"]["8"] = []string{"^>", ">^"}
+	numberPad["4"]["9"] = []string{"^>>", ">>^"}
 
-	numberPad["8"] = make(map[string]string)
-	numberPad["8"]["5"] = "v"
-	numberPad["8"]["7"] = "<"
-	numberPad["8"]["9"] = ">"
+	numberPad["5"] = make(map[string][]string)
+	numberPad["5"]["A"] = []string{">vv", "vv>"}
+	numberPad["5"]["0"] = []string{"vv"}
+	numberPad["5"]["1"] = []string{"v<", "<v"}
+	numberPad["5"]["2"] = []string{"v"}
+	numberPad["5"]["3"] = []string{"v>"}
+	numberPad["5"]["4"] = []string{"<"}
+	numberPad["5"]["5"] = []string{""}
+	numberPad["5"]["6"] = []string{">"}
+	numberPad["5"]["7"] = []string{"^<", "<^"}
+	numberPad["5"]["8"] = []string{"^"}
+	numberPad["5"]["9"] = []string{"^>", ">^"}
 
-	numberPad["9"] = make(map[string]string)
-	numberPad["9"]["6"] = "v"
-	numberPad["9"]["8"] = "<"
+	numberPad["6"] = make(map[string][]string)
+	numberPad["6"]["A"] = []string{"vv"}
+	numberPad["6"]["0"] = []string{"vv<", "<vv"}
+	numberPad["6"]["1"] = []string{"v<<", "<<v"}
+	numberPad["6"]["2"] = []string{"<v", "v<"}
+	numberPad["6"]["3"] = []string{"v"}
+	numberPad["6"]["4"] = []string{"<<"}
+	numberPad["6"]["5"] = []string{"<"}
+	numberPad["6"]["6"] = []string{""}
+	numberPad["6"]["7"] = []string{"^<<", "<<^"}
+	numberPad["6"]["8"] = []string{"^<", "<^"}
+	numberPad["6"]["9"] = []string{"^"}
 
-	numberPad["A"] = make(map[string]string)
-	numberPad["A"]["0"] = "<"
-	numberPad["A"]["3"] = "^"
+	numberPad["7"] = make(map[string][]string)
+	numberPad["7"]["A"] = []string{">>vvv"}
+	numberPad["7"]["0"] = []string{">vvv", "v>vv", "vv>v"}
+	numberPad["7"]["1"] = []string{"vv"}
+	numberPad["7"]["2"] = []string{"vv>", ">vv"}
+	numberPad["7"]["3"] = []string{"vv>>", ">>vv"}
+	numberPad["7"]["4"] = []string{"v"}
+	numberPad["7"]["5"] = []string{">v", "v>"}
+	numberPad["7"]["6"] = []string{"v>>", ">>v"}
+	numberPad["7"]["7"] = []string{""}
+	numberPad["7"]["8"] = []string{">"}
+	numberPad["7"]["9"] = []string{">>"}
+
+	numberPad["8"] = make(map[string][]string)
+	numberPad["8"]["A"] = []string{"vvv>", ">vvv"}
+	numberPad["8"]["0"] = []string{"vvv"}
+	numberPad["8"]["1"] = []string{"vv<", "<vv"}
+	numberPad["8"]["2"] = []string{"vv"}
+	numberPad["8"]["3"] = []string{"vv>", ">vv"}
+	numberPad["8"]["4"] = []string{"v<", "<v"}
+	numberPad["8"]["5"] = []string{"v"}
+	numberPad["8"]["6"] = []string{"v>", ">v"}
+	numberPad["8"]["7"] = []string{"<"}
+	numberPad["8"]["8"] = []string{""}
+	numberPad["8"]["9"] = []string{">"}
+
+	numberPad["9"] = make(map[string][]string)
+	numberPad["9"]["A"] = []string{"vvv"}
+	numberPad["9"]["0"] = []string{"vvv<", "<vvv"}
+	numberPad["9"]["1"] = []string{"<<vv", "vv<<"}
+	numberPad["9"]["2"] = []string{"<vv", "vv<"}
+	numberPad["9"]["3"] = []string{"vv"}
+	numberPad["9"]["4"] = []string{"<<v", "v<<"}
+	numberPad["9"]["5"] = []string{"<v", "v<"}
+	numberPad["9"]["6"] = []string{"v"}
+	numberPad["9"]["7"] = []string{"<<"}
+	numberPad["9"]["8"] = []string{"<"}
+	numberPad["9"]["9"] = []string{""}
 
 	return numberPad
 }
 
-func createDirectionalPad() map[string]map[string]string {
-	directionalPad := make(map[string]map[string]string)
+func createDirectionalPad() map[string]map[string][]string {
+	directionalPad := make(map[string]map[string][]string)
 
-	directionalPad["^"] = make(map[string]string)
-	directionalPad["^"]["A"] = ">"
-	directionalPad["^"]["v"] = "v"
+	directionalPad["A"] = make(map[string][]string)
+	directionalPad["A"]["A"] = []string{""}
+	directionalPad["A"]["^"] = []string{"<"}
+	directionalPad["A"]["<"] = []string{"v<<", "<v<"}
+	directionalPad["A"]["v"] = []string{"<v", "v<"}
+	directionalPad["A"][">"] = []string{"v"}
 
-	directionalPad["v"] = make(map[string]string)
-	directionalPad["v"]["<"] = "<"
-	directionalPad["v"]["^"] = "^"
-	directionalPad["v"][">"] = ">"
+	directionalPad["^"] = make(map[string][]string)
+	directionalPad["^"]["A"] = []string{">"}
+	directionalPad["^"]["^"] = []string{""}
+	directionalPad["^"]["<"] = []string{"v<"}
+	directionalPad["^"]["v"] = []string{"v"}
+	directionalPad["^"][">"] = []string{"v>", ">v"}
 
-	directionalPad["<"] = make(map[string]string)
-	directionalPad["<"]["v"] = ">"
+	directionalPad["<"] = make(map[string][]string)
+	directionalPad["<"]["A"] = []string{">>^", ">^>"}
+	directionalPad["<"]["^"] = []string{">^"}
+	directionalPad["<"]["<"] = []string{""}
+	directionalPad["<"]["v"] = []string{">"}
+	directionalPad["<"][">"] = []string{">>"}
 
-	directionalPad[">"] = make(map[string]string)
-	directionalPad[">"]["v"] = "<"
-	directionalPad[">"]["A"] = "^"
+	directionalPad["v"] = make(map[string][]string)
+	directionalPad["v"]["A"] = []string{"^>", ">^"}
+	directionalPad["v"]["^"] = []string{"^"}
+	directionalPad["v"]["<"] = []string{"<"}
+	directionalPad["v"]["v"] = []string{""}
+	directionalPad["v"][">"] = []string{">"}
 
-	directionalPad["A"] = make(map[string]string)
-	directionalPad["A"]["^"] = "<"
-	directionalPad["A"][">"] = "v"
+	directionalPad[">"] = make(map[string][]string)
+	directionalPad[">"]["A"] = []string{"^", "^>"}
+	directionalPad[">"]["^"] = []string{"<^", "^<"}
+	directionalPad[">"]["<"] = []string{"<<"}
+	directionalPad[">"]["v"] = []string{"<"}
+	directionalPad[">"][">"] = []string{""}
 
 	return directionalPad
 }
 
-type search struct {
-	paths []*strings.Builder
-}
-
-func newSearch() *search {
-	s := search{}
-	s.paths = make([]*strings.Builder, 0)
-	return &s
-}
-
-func (s *search) DFS(pad map[string]map[string]string, current string, target string, sb *strings.Builder, visited []string) {
-	if current == target {
-		s.paths = append(s.paths, sb)
+func buildSequence(keys string, index int, path string, pad map[string]map[string][]string, result map[string]struct{}) {
+	if index == len(keys) {
+		result[path] = struct{}{}
 		return
 	}
 
-	if direction, ok := pad[current][target]; ok {
-		sb.WriteString(direction)
-		s.paths = append(s.paths, sb)
-		return
+	previous := "A"
+
+	if index != 0 {
+		previous = string(keys[index-1])
 	}
 
-	for next, direction := range pad[current] {
-		if slices.Contains(visited, next) {
-			continue
-		}
-		visitedCopy := make([]string, len(visited)+1)
-		copy(visitedCopy, visited)
-		visitedCopy = append(visitedCopy, current)
-		sbCopy := strings.Builder{}
-		sbCopy.WriteString(sb.String() + direction)
-		s.DFS(pad, next, target, &sbCopy, visitedCopy)
+	for _, v := range pad[previous][string(keys[index])] {
+		buildSequence(keys, index+1, path+v+"A", pad, result)
 	}
 }
 
-func control(sequence string, pad map[string]map[string]string) []string {
-	allBuilders := make([][]*strings.Builder, 0)
-	current := "A"
-
-	for _, target := range sequence {
-		visited := make([]string, 0)
-
-		s := newSearch()
-
-		s.DFS(pad, current, string(target), &strings.Builder{}, visited)
-
-		for i := range s.paths {
-			s.paths[i].WriteString("A")
-		}
-
-		allBuilders = append(allBuilders, s.paths)
-
-		current = string(target)
+func shortestSequence(keys string, depth int, cache cache, pad map[string]map[string][]string) int {
+	if depth == 0 {
+		return len(keys)
 	}
 
-	for len(allBuilders) != 1 {
-		combined := make([]*strings.Builder, 0)
-		for i := range allBuilders[0] {
-			for j := range allBuilders[1] {
-				sb := strings.Builder{}
-				sb.WriteString(allBuilders[0][i].String())
-				sb.WriteString(allBuilders[1][j].String())
-				combined = append(combined, &sb)
-			}
-		}
-		allBuilders[1] = combined
-		allBuilders = allBuilders[1:]
+	cacheEntry := cacheEntry{path: keys, depth: depth}
+
+	if length, ok := cache[cacheEntry]; ok {
+		return length
 	}
 
-	allPaths := make([]string, 0)
+	subKeys := strings.Split(keys, "A")
+	subKeys = subKeys[:len(subKeys)-1]
 
-	for i := range allBuilders[0] {
-		allPaths = append(allPaths, allBuilders[0][i].String())
+	total := 0
+
+	for _, subKey := range subKeys {
+		sequences := make(map[string]struct{})
+		buildSequence(subKey+"A", 0, "", pad, sequences)
+
+		minimum := math.MaxInt
+
+		for sequence := range sequences {
+			l := shortestSequence(sequence, depth-1, cache, pad)
+			minimum = min(minimum, l)
+		}
+
+		total += minimum
 	}
 
-	slices.SortFunc(allPaths, func(a string, b string) int {
-		return len(a) - len(b)
-	})
+	cache[cacheEntry] = total
 
-	minLength := len(allPaths[0])
+	return cache[cacheEntry]
+}
 
-	result := make([]string, 0)
+func solve(input []string, depth int) int {
+	numberPad := createNumberPad()
+	directionalPad := createDirectionalPad()
 
-	for i := range allPaths {
-		if len(allPaths[i]) == minLength {
-			result = append(result, allPaths[i])
+	result := 0
+
+	for _, code := range input {
+		numericCode, _ := strconv.Atoi(code[0:3])
+		numberPadSequences := make(map[string]struct{})
+		buildSequence(code, 0, "", numberPad, numberPadSequences)
+
+		cache := make(cache)
+		minimum := math.MaxInt
+
+		for numberPadSequence := range numberPadSequences {
+			l := shortestSequence(numberPadSequence, depth, cache, directionalPad)
+			minimum = min(minimum, l)
 		}
+
+		result += (minimum * numericCode)
 	}
 
 	return result
@@ -188,34 +286,7 @@ func control(sequence string, pad map[string]map[string]string) []string {
 func Part1(file *os.File) int {
 	input := utils.ReadFile(file)
 
-	numberPad := createNumberPad()
-	directionalPad := createDirectionalPad()
-
-	result := 0
-	for _, code := range input {
-		numericCode, _ := strconv.Atoi(code[0:3])
-		minPath := ""
-		numberPadPaths := control(code, numberPad)
-
-		for _, numberPadPath := range numberPadPaths {
-			directionalPadPathOnes := control(numberPadPath, directionalPad)
-
-			for _, directionalPadPathOne := range directionalPadPathOnes {
-				directionalPadPathTwos := control(directionalPadPathOne, directionalPad)
-				for _, directionalPadPathTwo := range directionalPadPathTwos {
-					if minPath == "" {
-						minPath = directionalPadPathTwo
-					}
-
-					if len(directionalPadPathTwo) < len(minPath) {
-						minPath = directionalPadPathTwo
-					}
-				}
-			}
-		}
-
-		result += (numericCode * len(minPath))
-	}
+	result := solve(input, 2)
 
 	return result
 }
