@@ -8,9 +8,10 @@ import (
 )
 
 func calculateNextSecret(secret int) int {
-	secret = ((secret * 64) ^ secret) % 16777216
-	secret = ((secret / 32) ^ secret) % 16777216
-	secret = ((secret * 2048) ^ secret) % 16777216
+	mask := 0b1111_1111_1111_1111_1111_1111 // 24 bits
+	secret = ((secret << 6) ^ secret) & mask
+	secret = ((secret >> 5) ^ secret) & mask
+	secret = ((secret << 11) ^ secret) & mask
 
 	return secret
 }
