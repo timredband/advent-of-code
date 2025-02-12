@@ -22,6 +22,7 @@ import (
 	"github.com/timredband/advent-of-code/pkg/day22"
 	"github.com/timredband/advent-of-code/pkg/day23"
 	"github.com/timredband/advent-of-code/pkg/day24"
+	"github.com/timredband/advent-of-code/pkg/day25"
 	"github.com/timredband/advent-of-code/pkg/day3"
 	"github.com/timredband/advent-of-code/pkg/day4"
 	"github.com/timredband/advent-of-code/pkg/day5"
@@ -81,6 +82,8 @@ func Execute(day string, part string, file *os.File) (int, error) {
 		return day23.Execute(part, file)
 	case "24":
 		return day24.Execute(part, file)
+	case "25":
+		return day25.Execute(part, file)
 	default:
 		return 0, errors.New(fmt.Sprintf("unknown day: %s", day))
 	}
