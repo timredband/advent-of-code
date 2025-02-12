@@ -13,7 +13,7 @@ import (
 func main() {
 	var day string
 	var part string
-	var file string
+	var path string
 
 	cmd := &cli.Command{
 		Flags: []cli.Flag{
@@ -29,22 +29,15 @@ func main() {
 			},
 			&cli.StringFlag{
 				Name:        "f",
-				Destination: &file,
+				Destination: &path,
 			},
 		},
 		Action: func(ctx context.Context, cmd *cli.Command) error {
-			if file == "" {
-				file = fmt.Sprintf("./inputs/day%02s/input.txt", day)
+			if path == "" {
+				path = fmt.Sprintf("./inputs/day%02s/input.txt", day)
 			}
 
-			file, err := os.Open(file)
-			if err != nil {
-				return err
-			}
-
-			defer file.Close()
-
-			result, err := days.Execute(day, part, file)
+			result, err := days.Execute(day, part, path)
 			if err != nil {
 				return err
 			}
