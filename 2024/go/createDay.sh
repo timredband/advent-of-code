@@ -8,6 +8,10 @@ if [[ -z "$DAY" ]]; then
     exit 1
 fi
 
+if [[ ${#DAY} -eq 1 ]]; then
+    DAY="0$DAY"
+fi
+
 mkdir $SCRIPT_FOLDER/pkg/day$DAY
 
 cat <<EOF >"$SCRIPT_FOLDER/pkg/day$DAY/part1.go"
