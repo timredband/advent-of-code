@@ -1,17 +1,15 @@
 package day17
 
 import (
-	"fmt"
 	"math"
 	"os"
 	"regexp"
 	"strconv"
-	"strings"
 
 	"github.com/timredband/advent-of-code/pkg/utils"
 )
 
-// this is not a solution. TODO: figure this out
+// couldn't figure this one out. credit here https://www.youtube.com/watch?v=y-UPxMAh2N8.
 func Part2(file *os.File) int {
 	input := utils.ReadFile(file)
 
@@ -25,83 +23,33 @@ func Part2(file *os.File) int {
 		program = append(program, num)
 	}
 
-	output := ""
-	result := 0
-
-	expected := strings.Join(nums, "")
-	reversed := make([]string, 0)
-
-	for i := range expected {
-		reversed = append(reversed, string(expected[len(expected)-i-1]))
-	}
-
-	reversedExpected := strings.Join(reversed, "")
-
-	fmt.Println(reversedExpected)
-
-	var calculate func(depth int, input int) bool
-	calculate = func(depth int, input int) bool {
-		registerA := input
-		registerB := 0
-		registerC := 0
-		outputs := make([]string, 0)
-
-		if registerA == 0 {
-			outputs = append(outputs, strconv.Itoa(0))
-		} else {
-			for registerA != 0 {
-				registerB = registerA % 8
-				registerB = registerB ^ 1
-				registerC = registerA / (int(math.Pow(2, float64(registerB))))
-				registerB = registerB ^ registerC
-				registerB = registerB ^ 4
-				registerA = registerA >> 3
-				outputs = append(outputs, strconv.Itoa(registerB%8))
-			}
-		}
-
-		output = strings.Join(outputs, "")
-		fmt.Println(output)
-
-		return output == expected[depth:]
-	}
-
-	var DFS func(depth int, value int) bool
-	DFS = func(depth int, value int) bool {
-		if depth == 0 {
-			return true
-		}
-
-		if output == expected {
-			result = min(result, value)
-			return true
-		}
-
-		for i := range 8 {
-			v := ((i | 4) << (3 * depth)) | value
-			if i < 4 {
-				v = v ^ (4 << (3 * depth))
-			}
-			matches := calculate(depth, v)
-			if matches {
-				DFS(depth-1, v)
-			}
-
-			if output == reversedExpected {
-				result = min(result, value)
-				return true
-			}
-		}
-
-		return false
-	}
-
-	// start := 0b100_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000
-	start := 0
-	DFS(15, start)
-
-	fmt.Println("o: " + output)
-	fmt.Println("e: " + expected)
+	result := find(program, 0)
 
 	return result
+}
+
+func find(program []int, ans int) int {
+	if len(program) == 0 {
+		return ans
+	}
+
+	for i := range 8 {
+		a := ans<<3 | i
+		b := a % 8
+		b = b ^ 1
+		c := a / (int(math.Pow(2, float64(b))))
+		b = b ^ c
+		b = b ^ 4
+		if b%8 == program[len(program)-1] {
+			sub := find(program[:len(program)-1], a)
+
+			if sub == 0 {
+				continue
+			}
+
+			return sub
+		}
+	}
+
+	return 0
 }
