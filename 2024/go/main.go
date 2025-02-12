@@ -34,7 +34,7 @@ func main() {
 		},
 		Action: func(ctx context.Context, cmd *cli.Command) error {
 			if file == "" {
-				file = fmt.Sprintf("./inputs/day%s/input.txt", day)
+				file = fmt.Sprintf("./inputs/day%02s/input.txt", day)
 			}
 
 			file, err := os.Open(file)

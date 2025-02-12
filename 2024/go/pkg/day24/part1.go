@@ -18,9 +18,7 @@ type instruction struct {
 	destinationWire string
 }
 
-func Part1(file *os.File) int {
-	input := utils.ReadFile(file)
-
+func initialize(input []string) (map[string]int, map[string]instruction) {
 	wiresByName := make(map[string]int)
 	instructions := make(map[string]instruction)
 
@@ -56,6 +54,10 @@ func Part1(file *os.File) int {
 		instructions[instructionInput[3]] = instruction
 	}
 
+	return wiresByName, instructions
+}
+
+func processInstructions(wiresByName map[string]int, instructions map[string]instruction) {
 	for len(instructions) != 0 {
 		for destinationWire, instruction := range instructions {
 			if wiresByName[instruction.leftInputWire] != -1 && wiresByName[instruction.rightInputWire] != -1 {
@@ -75,6 +77,14 @@ func Part1(file *os.File) int {
 			}
 		}
 	}
+}
+
+func Part1(file *os.File) int {
+	input := utils.ReadFile(file)
+
+	wiresByName, instructions := initialize(input)
+
+	processInstructions(wiresByName, instructions)
 
 	i := 0
 	result := 0

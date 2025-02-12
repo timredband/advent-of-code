@@ -30,27 +30,6 @@ import (
 func Part2(file *os.File) int { return 0 }
 EOF
 
-cat <<EOF >"$SCRIPT_FOLDER/pkg/day$DAY/day$DAY.go"
-package day$DAY
-
-import (
-	"errors"
-	"fmt"
-	"os"
-)
-
-func Execute(part string, file *os.File) (int, error) {
-	switch part {
-	case "1":
-		return Part1(file), nil
-	case "2":
-		return Part2(file), nil
-	default:
-		return 0, errors.New(fmt.Sprintf("unknown part: %s", part))
-	}
-}
-EOF
-
 mkdir $SCRIPT_FOLDER/inputs/day$DAY
 touch $SCRIPT_FOLDER/inputs/day$DAY/example.txt
 touch $SCRIPT_FOLDER/inputs/day$DAY/input.txt
