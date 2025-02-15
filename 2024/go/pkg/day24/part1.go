@@ -2,13 +2,12 @@ package day24
 
 import (
 	"fmt"
+	"github.com/timredband/advent-of-code/pkg/utils"
 	"math"
+	"math/rand"
 	"os"
 	"regexp"
-	"strconv"
 	"strings"
-
-	"github.com/timredband/advent-of-code/pkg/utils"
 )
 
 type instruction struct {
@@ -23,9 +22,11 @@ func initialize(input []string) (map[string]int, map[string]instruction) {
 	instructions := make(map[string]instruction)
 
 	for i := range input {
+		randomNumber := rand.Intn(2)
+
 		if strings.Contains(input[i], ":") {
 			name := input[i][0:3]
-			wiresByName[name], _ = strconv.Atoi(string(input[i][len(input[i])-1]))
+			wiresByName[name] = randomNumber
 			continue
 		}
 
@@ -42,6 +43,10 @@ func initialize(input []string) (map[string]int, map[string]instruction) {
 
 		if _, ok := wiresByName[instructionInput[3]]; !ok {
 			wiresByName[instructionInput[3]] = -1
+		}
+
+		if instructionInput[0] > instructionInput[2] {
+			instructionInput[0], instructionInput[2] = instructionInput[2], instructionInput[0]
 		}
 
 		instruction := instruction{
