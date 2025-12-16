@@ -8,6 +8,7 @@ pub mod day05;
 pub mod day06;
 pub mod day07;
 pub mod day08;
+pub mod day09;
 
 pub fn execute(day: i16, file: &File, part: i16) -> Result<i64, &str> {
     let result = match day {
@@ -49,6 +50,11 @@ pub fn execute(day: i16, file: &File, part: i16) -> Result<i64, &str> {
         8 => match part {
             1 => day08::part1(file),
             2 => day08::part2(file),
+            _ => return Err("Invalid part"),
+        },
+        9 => match part {
+            1 => day09::part1(file),
+            2 => day09::part2(file),
             _ => return Err("Invalid part"),
         },
         _ => return Err("Invalid day"),
